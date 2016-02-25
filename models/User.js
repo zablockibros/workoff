@@ -1,3 +1,5 @@
+"use strict";
+
 var bcrypt = require('bcrypt-nodejs');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
@@ -25,6 +27,8 @@ var userSchema = new mongoose.Schema({
     picture: { type: String, default: '' }
   }
 }, { timestamps: true });
+
+userSchema.set('autoIndex', false);
 
 /**
  * Password hash middleware.
@@ -73,6 +77,7 @@ userSchema.methods.gravatar = function(size) {
   var md5 = crypto.createHash('md5').update(this.email).digest('hex');
   return 'https://gravatar.com/avatar/' + md5 + '?s=' + size + '&d=retro';
 };
+
 
 var User = mongoose.model('User', userSchema);
 
