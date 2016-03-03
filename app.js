@@ -29,11 +29,18 @@ var upload = multer({ dest: path.join(__dirname, 'uploads') });
 dotenv.load({ path: '.env.example' });
 
 /**
+ * Models
+ */
+var User = require('./models/User');
+
+/**
  * Controllers (route handlers).
  */
 var homeController = require('./controllers/home');
 var userController = require('./controllers/user');
 var apiController = require('./controllers/api');
+var apiControllers = {};
+    apiControllers.v1 = require('./controllers/api/v1/api');
 var contactController = require('./controllers/contact');
 
 /**
@@ -86,7 +93,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 app.use(function(req, res, next) {
-  if (req.path === '/api/upload') {
+  // skip CSRF token requirement on /v1/api paths
+  if (req.path.startsWith('/v1/api')) {
     next();
   } else {
     lusca.csrf()(req, res, next);
@@ -126,6 +134,11 @@ app.post('/account/profile', passportConfig.isAuthenticated, userController.post
 app.post('/account/password', passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post('/account/delete', passportConfig.isAuthenticated, userController.postDeleteAccount);
 app.get('/account/unlink/:provider', passportConfig.isAuthenticated, userController.getOauthUnlink);
+
+/**
+ * Data API calls
+ */
+app.use('/v1/api', apiControllers.v1);
 
 /**
  * API examples routes.

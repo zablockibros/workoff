@@ -3,21 +3,32 @@
 var mongoose = require('mongoose');
 
 var postSchema = new mongoose.Schema({
-  _user: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    index: true
+  },
+  board: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Board',
+    index: true,
+    default: null
   },
   domain: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Domain'
+    ref: 'Domain',
+    index: true
   },
+  public: { type: Boolean, default: true },
+  type: { type: String, index: true },
   title: { type: String },
   content: { type: String },
   date: { type: Date, default: Date.now },
   comments: [{
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Activity'
   }],
+  score: { type: Number, default: 0 },
   meta : {
     upvotes : Number,
     downvotes : Number,
@@ -26,7 +37,6 @@ var postSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-postSchema.index({ name: 1 });
 postSchema.set('autoIndex', false);
 
 /**
@@ -34,7 +44,7 @@ postSchema.set('autoIndex', false);
  */
 postSchema.pre('save', function(next) {
   var post = this;
-
+  post.score = 0;
   next();
 });
 

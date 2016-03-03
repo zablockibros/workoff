@@ -1,0 +1,196 @@
+var _ = require('lodash');
+var async = require('async');
+var passportConfig = require('../../../config/passport');
+var User = require('../../../models/User');
+var Post = require('../../../models/Post');
+var Activity = require('../../../models/Activity');
+var express = require('express');
+var router = express.Router();
+
+
+/**
+ * Establish params
+ */
+router.param('post', function(req, res, next, id) {
+ Post.findOne( {'_id' : id }, function(err, post) {
+   if (err) {
+     next(err);
+   } else if (post) {
+     req.post = post;
+     next();
+   } else {
+     next(new Error('Could not find that post'));
+   }
+ });
+});
+router.param('comment', function(req, res, next, id) {
+  Activity.findOne( {'_id' : id, type: 'comment' }, function(err, post) {
+    if (err) {
+      next(err);
+    } else if (post) {
+      req.comment = comment;
+      next();
+    } else {
+      next(new Error('Could not find that comment'));
+    }
+  });
+});
+
+
+/**
+ * POST /login
+ * Login a user
+ */
+router.post('/login', function(req, res){
+  req.assert('email', 'Email is not valid').isEmail();
+  req.assert('password', 'Password cannot be blank').notEmpty();
+
+  var errors = req.validationErrors();
+
+  if (errors) {
+    return res.status(400).json(errors);
+  }
+
+  passport.authenticate('local', function(err, user, info) {
+    if (err) {
+      return res.status(400).json({ error: err });
+    }
+    if (!user) {
+      return res.status(400).json({ msg: info.message });
+    }
+    req.logIn(user, function(err) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      return res.json({ msg: 'Success! You are logged in.' });
+    });
+  })(req, res);
+});
+
+/**
+ * POST /signup
+ * Signup
+ */
+router.post('/signup', function(req, res){
+  req.assert('email', 'Email is not valid').isEmail();
+  req.assert('password', 'Password must be at least 4 characters long').len(4);
+  req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
+
+  var errors = req.validationErrors();
+
+  if (errors) {
+    return res.json(errors);
+  }
+
+  var user = new User({
+    email: req.body.email,
+    password: req.body.password
+  });
+
+  User.findOne({ email: req.body.email }, function(err, existingUser) {
+    if (existingUser) {
+      return res.status(400).json({ errors: ['Account with that email address already exists.'] });
+    }
+    user.save(function(err) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      req.logIn(user, function(err) {
+        if (err) {
+          return res.status(400).json({ error: err });
+        }
+        res.json(user);
+      });
+    });
+  });
+});
+
+/**
+ * GET /home
+ * Gets logged in user's boards, home posts, and other
+ */
+router.get('/home', function(req, res) {
+  res.json({ user: { name: "God" } });
+});
+
+/**
+ * GET /posts?sort=&order=ASC|DESC
+ * Get all posts for the users team
+ */
+router.get('/posts', function(req, res) {
+  // Find posts by req.user.domain
+  Post.find({
+    domain: req.user.domain
+  })
+  .sort({ createdAt: -1 })
+  .limit(20)
+  .exec(function(err, posts){
+    if (err) {
+      res.status(400).json({ error: 'Failed to find posts' });
+    } else {
+      res.json(posts);
+    }
+  });
+});
+
+/**
+ * GET /post/:post
+ * Gets post and it's activities
+ */
+router.get('/post/:post', function(req, res) {
+  //if (req.user.domain._id === req.post.domain._id) {
+    res.json(req.post);
+  //} else {
+  //  res.status(401).json({ error: 'Post not found' });
+  //}
+});
+
+/**
+ * POST /post
+ * Make a post
+ */
+router.post('/post', function(req, res) {
+
+});
+
+/**
+ * POST /post/:post/upvote
+ * Upvote a post
+ */
+router.post('/post/:post/upvote', function(req, res) {
+
+});
+
+/**
+ * POST /post/:post/downvote
+ * Downvote a post
+ */
+router.post('/post/:post/downvote', function(req, res) {
+
+});
+
+/**
+ * GET /post/:post/comments
+ * Get all root comments for a post
+ */
+router.get('/post/:post/comments', function(req, res) {
+
+});
+
+/**
+ * GET /post/:post/comment/:comment
+ * Get all comment and sub comment data
+ */
+router.get('/post/:post/comments/:comment', function(req, res) {
+
+});
+
+/**
+ * POST /post/:post/comment?commentId=
+ * Post a comment to a post
+ */
+router.post('/post/:post/comment', function(req, res) {
+
+});
+
+module.exports = router;

@@ -6,6 +6,11 @@ var mongoose = require('mongoose');
 
 var userSchema = new mongoose.Schema({
   email: { type: String, lowercase: true, unique: true },
+  domain: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Domain',
+    index: true
+  },
   password: String,
   passwordResetToken: String,
   passwordResetExpires: Date,

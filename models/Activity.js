@@ -3,22 +3,23 @@
 var mongoose = require('mongoose');
 
 var activitySchema = new mongoose.Schema({
-  _user: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    index: true
   },
   post: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Post'
+    ref: 'Post',
+    index: true
   },
-  object: { type: String },
-  key: { type: mongoose.Schema.Types.ObjectId },
-  type: { type: String },
+  object: { type: String, index: true },
+  key: { type: mongoose.Schema.Types.ObjectId, index: true },
+  type: { type: String, index: true },
   value: { type: String }
 
 }, { timestamps: true });
 
-activitySchema.index({ name: 1 });
 activitySchema.set('autoIndex', false);
 
 /**
