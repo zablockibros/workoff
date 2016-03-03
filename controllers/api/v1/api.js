@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var async = require('async');
+var passport = require('passport');
 var passportConfig = require('../../../config/passport');
 var User = require('../../../models/User');
 var Post = require('../../../models/Post');
@@ -37,11 +38,13 @@ router.param('comment', function(req, res, next, id) {
 });
 
 
+// USER ROUTES
+
 /**
  * POST /login
  * Login a user
  */
-router.post('/login', function(req, res){
+router.post('/login', function(req, res) {
   req.assert('email', 'Email is not valid').isEmail();
   req.assert('password', 'Password cannot be blank').notEmpty();
 
@@ -56,7 +59,7 @@ router.post('/login', function(req, res){
       return res.status(400).json({ error: err });
     }
     if (!user) {
-      return res.status(400).json({ msg: info.message });
+      return res.status(400).json({ error: info.message });
     }
     req.logIn(user, function(err) {
       if (err) {
@@ -104,6 +107,59 @@ router.post('/signup', function(req, res){
     });
   });
 });
+
+/**
+ * GET /account
+ * Get the current logged in user
+ */
+router.get('/account', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+  User
+    .findById(req.user._id)
+    .populate('domain')
+    .exec(function(err, user) {
+      if (err) {
+        res.status(401).json({ error: 'User not found' });
+      }
+      res.json(user);
+    });
+});
+
+/**
+ * POST /account/update
+ * Update a user account
+ */
+router.post('/account', function(req, res) {
+ User.findById(req.user.id, function(err, user) {
+   if (err) {
+     return next(err);
+   }
+   user.profile.name = req.body.name || '';
+   user.profile.gender = req.body.gender || '';
+   user.profile.location = req.body.location || '';
+   user.profile.website = req.body.website || '';
+   user.save(function(err) {
+     if (err) {
+       return res.status(400).json({ error: err });
+     }
+     res.json(user);
+   });
+ });
+});
+
+/**
+ * POST /logout
+ * Logout the current user
+ */
+router.post('/logout', function(req, res) {
+    req.logout();
+    res.json({ message: 'You have been logged out' });
+});
+
+
+// POST ROUTES
 
 /**
  * GET /home

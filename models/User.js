@@ -3,6 +3,7 @@
 var bcrypt = require('bcrypt-nodejs');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
+var Domain = require('./Domain');
 
 var userSchema = new mongoose.Schema({
   email: { type: String, lowercase: true, unique: true },
@@ -55,6 +56,46 @@ userSchema.pre('save', function(next) {
       next();
     });
   });
+});
+
+/**
+ * Set the domain of the user
+ */
+userSchema.pre('save', function(next) {
+  var user = this;
+  if (!user.isModified('email')) {
+    return next();
+  }
+
+  var email = user.email || '';
+  if (!email) {
+    return next();
+  }
+
+  var domainName = email.replace(/.*@/, "");
+  if (!domainName) {
+    return next();
+  }
+
+  Domain
+    .findOne({ name: domainName })
+    .exec(function(err, domain) {
+      if (err) {
+        return next();
+      }
+      if (domain === null) {
+        Domain.create({ name: domainName }, function(domainErr, newDomain) {
+          if (err) {
+            return next();
+          }
+          user.domain = newDomain;
+          return next();
+        });
+      } else {
+        user.domain = domain;
+        return next();
+      }
+    });
 });
 
 /**
