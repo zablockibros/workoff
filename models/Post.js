@@ -25,11 +25,8 @@ var postSchema = new mongoose.Schema({
   link: { type: String, default: null },
   content: { type: String },
   date: { type: Date, default: Date.now },
-  comments: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Activity'
-  }],
   meta : {
+    comments: { type: Number, default: 0 },
     score: { type: Number, default: 0 },
     upvotes : { type: Number, default: 0 },
     downvotes : { type: Number, default: 0 },
