@@ -3,6 +3,7 @@ var async = require('async');
 var passport = require('passport');
 var passportConfig = require('../../../config/passport');
 var User = require('../../../models/User');
+var UserManager = require('../../../models/managers/UserManager');
 var Post = require('../../../models/Post');
 var Activity = require('../../../models/Activity');
 var express = require('express');
@@ -116,15 +117,14 @@ router.get('/account', function(req, res) {
   if (!req.user) {
     return res.status(401).json({ error: 'You are not logged in!' });
   }
-  User
-    .findById(req.user._id)
-    .populate('domain')
-    .exec(function(err, user) {
-      if (err) {
-        res.status(401).json({ error: 'User not found' });
-      }
-      res.json(user);
-    });
+  UserManager.getPrivateUser(req.user._id).then(function(user) {
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+    res.json(user);
+  }, function(err){
+    res.status(401).json({ error: err });
+  });
 });
 
 /**
@@ -170,21 +170,39 @@ router.get('/home', function(req, res) {
 });
 
 /**
- * GET /posts?sort=&order=ASC|DESC
+ * GET /posts?sort=new|hot&page=
  * Get all posts for the users team
  */
 router.get('/posts', function(req, res) {
+  var sort = {};
+  req.query.sort = ('sort' in req.query) ? req.query.sort : 'new';
+  req.query.sort = (['new','hot'].indexOf(req.query.sort) > -1) ? req.query.sort : 'new';
+  if (req.query.sort == 'new') {
+    sort.createdAt = -1
+  }
+  else if (req.query.sort == 'hot') {
+    sort.score = 1;
+  }
+
+  var page = ('page' in req.query) ? parseInt(req.query.page) : 0;
+      page = (page >= 0) ? page : 0;
+
   // Find posts by req.user.domain
   Post.find({
     domain: req.user.domain
   })
-  .sort({ createdAt: -1 })
+  .sort(sort)
+  .skip(page*20)
   .limit(20)
   .exec(function(err, posts){
     if (err) {
       res.status(400).json({ error: 'Failed to find posts' });
     } else {
-      res.json(posts);
+      res.json({
+        posts: posts,
+        page: page,
+        sort: sort
+      });
     }
   });
 });
@@ -194,11 +212,7 @@ router.get('/posts', function(req, res) {
  * Gets post and it's activities
  */
 router.get('/post/:post', function(req, res) {
-  //if (req.user.domain._id === req.post.domain._id) {
     res.json(req.post);
-  //} else {
-  //  res.status(401).json({ error: 'Post not found' });
-  //}
 });
 
 /**
