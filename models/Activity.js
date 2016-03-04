@@ -13,10 +13,11 @@ var activitySchema = new mongoose.Schema({
     ref: 'Post',
     index: true
   },
-  object: { type: String, index: true },
-  key: { type: mongoose.Schema.Types.ObjectId, index: true },
+  object: { type: String, index: true, default: null },
+  key: { type: mongoose.Schema.Types.ObjectId, index: true, default: null },
   type: { type: String, index: true },
-  value: { type: String }
+  value: { type: Number, default: 0 },
+  content: { type: String, default: null }
 
 }, { timestamps: true });
 

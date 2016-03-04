@@ -1,6 +1,7 @@
 "use strict";
 
 var User = require('../User');
+var Board = require('../Board');
 var Q = require('q');
 
 /**

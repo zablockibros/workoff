@@ -34,6 +34,6 @@ boardSchema.pre('save', function(next) {
  */
 
 
-var Board = mongoose.model('Post', boardSchema);
+var Board = mongoose.model('Board', boardSchema);
 
 module.exports = Board;

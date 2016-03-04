@@ -3,8 +3,9 @@ var async = require('async');
 var passport = require('passport');
 var passportConfig = require('../../../config/passport');
 var User = require('../../../models/User');
-var UserManager = require('../../../models/managers/UserManager');
 var Post = require('../../../models/Post');
+var UserManager = require('../../../models/managers/UserManager');
+var PostManager = require('../../../models/managers/PostManager');
 var Activity = require('../../../models/Activity');
 var express = require('express');
 var router = express.Router();
@@ -14,7 +15,7 @@ var router = express.Router();
  * Establish params
  */
 router.param('post', function(req, res, next, id) {
- Post.findOne( {'_id' : id }, function(err, post) {
+ Post.findOne({'_id' : id }, function(err, post) {
    if (err) {
      next(err);
    } else if (post) {
@@ -26,7 +27,7 @@ router.param('post', function(req, res, next, id) {
  });
 });
 router.param('comment', function(req, res, next, id) {
-  Activity.findOne( {'_id' : id, type: 'comment' }, function(err, post) {
+  Activity.findOne({'_id' : id, type: 'comment' }, function(err, post) {
     if (err) {
       next(err);
     } else if (post) {
@@ -169,11 +170,61 @@ router.get('/home', function(req, res) {
   res.json({ user: { name: "God" } });
 });
 
+
+/**
+ * POST /post
+ * Make a post
+ */
+router.post('/post', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
+  req.assert('title', 'Please provide a title').notEmpty();
+  req.assert('content', 'Please provide a description').notEmpty();
+  req.assert('link', 'Please enter a valid URL').isURL({
+    require_protocol: true
+  });
+  req.sanitize('title').escape();
+  req.sanitize('content').escape();
+
+  var errors = req.validationErrors();
+
+  if (errors) {
+    return res.status(400).json(errors);
+  }
+
+  UserManager.getPrivateUser(req.user._id).then(function(user) {
+    var post = new Post({
+      title: req.body.title,
+      content: req.body.content,
+      link: req.body.link,
+      user: user,
+      domain: user.domain
+    });
+
+    post.save(function(err) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+
+      res.json({ post: post });
+    });
+  },
+  function(err) {
+    return res.status(400).json({ error: err });
+  });
+});
+
 /**
  * GET /posts?sort=new|hot&page=
  * Get all posts for the users team
  */
 router.get('/posts', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
   var sort = {};
   req.query.sort = ('sort' in req.query) ? req.query.sort : 'new';
   req.query.sort = (['new','hot'].indexOf(req.query.sort) > -1) ? req.query.sort : 'new';
@@ -184,26 +235,33 @@ router.get('/posts', function(req, res) {
     sort.score = 1;
   }
 
-  var page = ('page' in req.query) ? parseInt(req.query.page) : 0;
-      page = (page >= 0) ? page : 0;
+  var page = ('page' in req.query) ? parseInt(req.query.page) : 1;
+      page = (page > 0) ? page : 1;
 
   // Find posts by req.user.domain
-  Post.find({
-    domain: req.user.domain
-  })
-  .sort(sort)
-  .skip(page*20)
-  .limit(20)
-  .exec(function(err, posts){
-    if (err) {
-      res.status(400).json({ error: 'Failed to find posts' });
-    } else {
-      res.json({
-        posts: posts,
-        page: page,
-        sort: sort
-      });
-    }
+  UserManager.getPrivateUser(req.user._id).then(function(user) {
+    Post.find({
+      domain: user.domain
+    })
+    .sort(sort)
+    .skip((page-1)*20)
+    .limit(20)
+    .select({
+      user: 0
+    })
+    .exec(function(err, posts) {
+      if (err) {
+        res.status(400).json({ error: 'Failed to find posts' });
+      } else {
+        res.json({
+          posts: posts,
+          page: page,
+          sort: sort
+        });
+      }
+    });
+  }, function(err) {
+    return res.status(400).json({ error: err });
   });
 });
 
@@ -212,15 +270,21 @@ router.get('/posts', function(req, res) {
  * Gets post and it's activities
  */
 router.get('/post/:post', function(req, res) {
-    res.json(req.post);
-});
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
 
-/**
- * POST /post
- * Make a post
- */
-router.post('/post', function(req, res) {
-
+  Post
+    .findById(req.post._id)
+    .select({
+      user: 0
+    })
+    .exec(function(err, post) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      res.json(post);
+    });
 });
 
 /**
@@ -228,7 +292,15 @@ router.post('/post', function(req, res) {
  * Upvote a post
  */
 router.post('/post/:post/upvote', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
 
+  PostManager.upvote(req.post, req.user).then(function(data) {
+    res.json(data);
+  }, function(err) {
+    res.status(400).json({ error: err });
+  });
 });
 
 /**
@@ -236,23 +308,15 @@ router.post('/post/:post/upvote', function(req, res) {
  * Downvote a post
  */
 router.post('/post/:post/downvote', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
 
-});
-
-/**
- * GET /post/:post/comments
- * Get all root comments for a post
- */
-router.get('/post/:post/comments', function(req, res) {
-
-});
-
-/**
- * GET /post/:post/comment/:comment
- * Get all comment and sub comment data
- */
-router.get('/post/:post/comments/:comment', function(req, res) {
-
+  PostManager.downvote(req.post, req.user).then(function(data) {
+    res.json(data);
+  }, function(err) {
+    res.status(400).json({ error: err });
+  });
 });
 
 /**
@@ -260,7 +324,67 @@ router.get('/post/:post/comments/:comment', function(req, res) {
  * Post a comment to a post
  */
 router.post('/post/:post/comment', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
 
+  req.assert('content', 'Please provide a comment').notEmpty();
+  req.sanitize('content').escape();
+
+  var errors = req.validationErrors();
+
+  if (errors) {
+    return res.status(400).json(errors);
+  }
+
+  PostManager.commentOn(req.post, req.user, req.body.content).then(function(data) {
+    res.json(data);
+  },
+  function(err) {
+    res.status(400).json({ error: err });
+  });
+});
+
+/**
+ * GET /post/:post/comments?page=
+ * Get all root comments for a post
+ */
+router.get('/post/:post/comments', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
+  var sort = {};
+  sort.createdAt = -1
+
+  var page = ('page' in req.query) ? parseInt(req.query.page) : 1;
+      page = (page > 0) ? page : 1;
+
+  Activity
+    .find({
+      type: 'comment',
+      post: req.post
+    })
+    .select({
+      user: 0,
+      post: 0,
+      object: 0,
+      key: 0,
+      type: 0,
+      value: 0
+    })
+    .sort(sort)
+    .skip((page-1)*20)
+    .limit(20)
+    .exec(function(err, comments) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      res.json({
+        comments: comments,
+        page: page
+      })
+    });
 });
 
 module.exports = router;

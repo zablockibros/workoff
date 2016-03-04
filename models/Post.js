@@ -22,17 +22,19 @@ var postSchema = new mongoose.Schema({
   public: { type: Boolean, default: true },
   type: { type: String, index: true },
   title: { type: String },
+  link: { type: String, default: null },
   content: { type: String },
   date: { type: Date, default: Date.now },
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Activity'
   }],
-  score: { type: Number, default: 0 },
   meta : {
-    upvotes : Number,
-    downvotes : Number,
-    favs : Number
+    score: { type: Number, default: 0 },
+    upvotes : { type: Number, default: 0 },
+    downvotes : { type: Number, default: 0 },
+    favs : { type: Number, default: 0 },
+    clicks: { type: Number, default: 0 }
   }
 
 }, { timestamps: true });
@@ -44,14 +46,12 @@ postSchema.set('autoIndex', false);
  */
 postSchema.pre('save', function(next) {
   var post = this;
-  post.score = 0;
   next();
 });
 
 /**
  *  Helper functions
  */
-
 
 var Post = mongoose.model('Post', postSchema);
 
