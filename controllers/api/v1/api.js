@@ -5,6 +5,7 @@ var passportConfig = require('../../../config/passport');
 var User = require('../../../models/User');
 var Post = require('../../../models/Post');
 var Domain = require('../../../models/Domain');
+var Notification = require('../../../models/Notification');
 var UserManager = require('../../../models/managers/UserManager');
 var PostManager = require('../../../models/managers/PostManager');
 var Activity = require('../../../models/Activity');
@@ -48,6 +49,18 @@ router.param('domain', function(req, res, next, id) {
       next();
     } else {
       next(new Error('Could not find that domain'));
+    }
+  });
+});
+router.param('notification', function(req, res, next, id) {
+  Notification.findById(id, function(err, notification) {
+    if (err) {
+      next(err);
+    } else if (notification) {
+      req.notification = notification;
+      next();
+    } else {
+      next(new Error('Could not find that notification'));
     }
   });
 });
@@ -173,6 +186,73 @@ router.post('/logout', function(req, res) {
 });
 
 
+// NOTIFICATIONS
+
+/**
+ * GET /notifications?new=false&page=
+ * Get the user's most recent notificatons
+ * If new is passed as true only unseen notification are fetched
+ */
+router.get('/notifications', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
+  req.query.new = ('new' in req.query) ? req.query.new : false;
+
+  var where = {};
+  if (req.query.new) {
+    where.seen = false;
+  }
+
+  var page = ('page' in req.query) ? parseInt(req.query.page) : 1;
+      page = (page > 0) ? page : 1;
+
+  Notification
+    .find({
+      user: req.user
+    })
+    .where(where)
+    .skip((page-1)*20)
+    .limit(20)
+    .exec(function(err, notifications) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      res.json({
+        notification: notifications,
+        page: page
+      });
+    });
+});
+
+/**
+ * POST /notification/:notification/seen
+ * Mark a notification as seen
+ */
+router.post('/nofitication/:notification/seen', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+  if (post.domain.toString() != user.domain.toString()) {
+    return res.status(403).json({ error: 'Not allowed to edit that notification' });
+  }
+
+  var notify = req.notification;
+
+  notify.seen = true;
+  notify.save(function(err) {
+    if (err) {
+      return res.status(400).json({ error: err });
+    }
+    res.json({
+      message: 'Message seen',
+      notification: notify
+    })
+  });
+});
+
+
 // DOMAIN ROUTES
 
 /**
@@ -214,29 +294,26 @@ router.get('/domains', function(req, res) {
   if (!req.user) {
     return res.status(401).json({ error: 'You are not logged in!' });
   }
-    if (!req.user) {
-      return res.status(401).json({ error: 'You are not logged in!' });
-    }
 
-    req.assert('name', 'Please provide a domain name to find').notEmpty();
-    req.sanitize('name').escape();
+  req.assert('name', 'Please provide a domain name to find').notEmpty();
+  req.sanitize('name').escape();
 
-    var errors = req.validationErrors();
+  var errors = req.validationErrors();
 
-    if (errors) {
-      return res.status(400).json(errors);
-    }
+  if (errors) {
+    return res.status(400).json(errors);
+  }
 
-    Domain
-      .find({
-        name: req.query.name
-      })
-      .exec(function(err, domains) {
-        if (err) {
-          return res.status(400).json({ error: err });
-        }
-        res.json(domains);
-      });
+  Domain
+    .find({
+      name: req.query.name
+    })
+    .exec(function(err, domains) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      res.json(domains);
+    });
 });
 
 /**
@@ -438,8 +515,11 @@ router.post('/post/:post/downvote', function(req, res) {
   });
 });
 
+
+// COMMENT ROUTES
+
 /**
- * POST /post/:post/comment?commentId=
+ * POST /post/:post/comment
  * Post a comment to a post
  */
 router.post('/post/:post/comment', function(req, res) {

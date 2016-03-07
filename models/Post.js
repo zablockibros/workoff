@@ -43,6 +43,14 @@ postSchema.set('autoIndex', false);
  */
 postSchema.pre('save', function(next) {
   var post = this;
+  this.wasNew = this.isNew;
+  next();
+});
+
+postSchema.post('save', function(post, next) {
+  if (post.wasNew) {
+    
+  }
   next();
 });
 

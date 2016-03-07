@@ -28,7 +28,14 @@ activitySchema.set('autoIndex', false);
  */
 activitySchema.pre('save', function(next) {
   var post = this;
+  this.wasNew = this.isNew;
+  next();
+});
 
+activitySchema.post('save', function(activity, next) {
+  if (this.wasNew) {
+    
+  }
   next();
 });
 
