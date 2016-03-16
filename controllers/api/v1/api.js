@@ -449,6 +449,9 @@ router.get('/posts', function(req, res) {
     .select({
       user: 0
     })
+    .populate('domain', {
+      name: 1
+    })
     .exec(function(err, posts) {
       if (err) {
         res.status(400).json({ error: 'Failed to find posts' });
@@ -588,6 +591,38 @@ router.get('/post/:post/comments', function(req, res) {
         page: page
       })
     });
+});
+
+/**
+ * POST /comment/:comment/upvote
+ * Upvote a comment
+ */
+router.post('/comment/:comment/upvote', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
+  CommentManger.upvote(req.comment, req.user).then(function(data) {
+    res.json(data);
+  }, function(err) {
+    res.status(400).json({ error: err });
+  });
+});
+
+/**
+ * POST /comment/:comment/downvote
+ * Downvote a comment
+ */
+router.post('/comment/:comment/downvote', function(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
+  CommentManager.downvote(req.comment, req.user).then(function(data) {
+    res.json(data);
+  }, function(err) {
+    res.status(400).json({ error: err });
+  });
 });
 
 module.exports = router;

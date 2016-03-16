@@ -13,12 +13,26 @@ var activitySchema = new mongoose.Schema({
     ref: 'Post',
     index: true
   },
+  parent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Activity',
+    index: true,
+    default: null
+  },
   object: { type: String, index: true, default: null },
   key: { type: mongoose.Schema.Types.ObjectId, index: true, default: null },
   type: { type: String, index: true },
   value: { type: Number, default: 0 },
   funnyName: { type: String },
-  content: { type: String, default: null }
+  content: { type: String, default: null },
+  meta : {
+    comments: { type: Number, default: 0 },
+    score: { type: Number, default: 0 },
+    upvotes : { type: Number, default: 0 },
+    downvotes : { type: Number, default: 0 },
+    favs : { type: Number, default: 0 },
+    clicks: { type: Number, default: 0 }
+  }
 
 }, { timestamps: true });
 
