@@ -1,6 +1,7 @@
 "use strict";
 
 var mongoose = require('mongoose');
+var RandomNameManager = require('./managers/RandomNameManager');
 
 var postSchema = new mongoose.Schema({
   user: {
@@ -21,6 +22,7 @@ var postSchema = new mongoose.Schema({
   },
   public: { type: Boolean, default: true },
   type: { type: String, index: true },
+  funnyName: { type: String },
   title: { type: String },
   link: { type: String, default: null },
   content: { type: String },
@@ -44,12 +46,24 @@ postSchema.set('autoIndex', false);
 postSchema.pre('save', function(next) {
   var post = this;
   this.wasNew = this.isNew;
-  next();
+
+  if (this.isNew) {
+    RandomNameManager.saveNameForUser(this.user).then(function(randomName) {
+      this.funnyName = randomName.name;
+      next();
+    },
+    function(err) {
+      next();
+    });
+  }
+  else {
+    next();
+  }
 });
 
 postSchema.post('save', function(post, next) {
   if (post.wasNew) {
-    
+
   }
   next();
 });

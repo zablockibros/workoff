@@ -17,6 +17,7 @@ var activitySchema = new mongoose.Schema({
   key: { type: mongoose.Schema.Types.ObjectId, index: true, default: null },
   type: { type: String, index: true },
   value: { type: Number, default: 0 },
+  funnyName: { type: String },
   content: { type: String, default: null }
 
 }, { timestamps: true });
@@ -29,12 +30,24 @@ activitySchema.set('autoIndex', false);
 activitySchema.pre('save', function(next) {
   var post = this;
   this.wasNew = this.isNew;
-  next();
+
+  if (this.isNew && this.type === 'comment' && this.user && this.post) {
+      RandomNameManager.saveNameForComment(this.user, this.post).then(function(randomName) {
+        this.funnyName = randomName.name;
+        next();
+      },
+      function(err) {
+        next();
+      });
+  }
+  else {
+    next();
+  }
 });
 
 activitySchema.post('save', function(activity, next) {
   if (this.wasNew) {
-    
+
   }
   next();
 });

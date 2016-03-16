@@ -13,33 +13,57 @@ exports.generate = function() {
 };
 
 /**
- * Generate a random name for a user commenting on a post
+ * Generate a random name for a user commenting on a post, either make a new one or return the existing
  */
 exports.generateForComment = function(post, user) {
   var def = Q.defer();
+  var existingDef = Q.defer();
+
   // check models for existing usege of names in the and generate until you have a free one
   var name = false;
 
-  // find the currently used names list for this comment
+  // check for existing
   RandomName
-    .find({
+    .findOne({
       user: user,
       post: post
     })
-    .where()
-    .exec(function(err, savedNames) {
+    .exec(function(err, existingRandomName) {
       if (err) {
-        return def.reject(err);
+        existingDef.reject(err);
       }
-      while (name === false) {
-        name = exports.generate();
-        // if that name exists in the collection for the post
-        if (_.find(savedNames, function(n){ n.name == name }) !== undefined) {
-          name = false;
-        }
+      else if (!existingRandomName) {
+        existingDef.resolve();
       }
-      def.resolve(name);
+      else {
+        def.resolve(existingRandomName, false);
+      }
     });
+
+  // find the currently used names list for this comment
+  existingDef.promise.then(function() {
+    RandomName
+      .find({
+        post: post
+      })
+      .where()
+      .exec(function(err, savedNames) {
+        if (err) {
+          return def.reject(err);
+        }
+        while (name === false) {
+          name = exports.generate();
+          // if that name exists in the collection for the post
+          if (_.find(savedNames, function(n){ n.name == name }) !== undefined) {
+            name = false;
+          }
+        }
+        def.resolve(name, true);
+      });
+  },
+  function(err) {
+    def.reject(err);
+  });
 
   timeout(function(){
     def.reject('Failed to find a name in time');
@@ -50,7 +74,7 @@ exports.generateForComment = function(post, user) {
 /**
  * Save a random name for a user
  */
-exports.makeNameForUser = function(user) {
+exports.saveNameForUser = function(user) {
   var def = Q.defer();
 
   var name = exports.generate();
@@ -72,13 +96,20 @@ exports.makeNameForUser = function(user) {
 
 /**
  * Save a random name for a user posting a comment on a post
+ * Saves no new record if one already exists
  */
-exports.makeNameForComment = function(user, post) {
+exports.saveNameForComment = function(user, post) {
   var def = Q.defer();
 
-  var name = exports.generateForComment(user, post).then(function(name) {
+  var name = exports.generateForComment(user, post).then(function(name, isNew) {
+    // if isNew then name is an object
+    if (!isNew) {
+      return def.resolve(name);
+    }
+
     var randomName = new RandomName({
       user: user,
+      post: post,
       name: name
     });
 
