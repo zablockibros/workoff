@@ -9,6 +9,7 @@ var Notification = require('../../../models/Notification');
 var UserManager = require('../../../models/managers/UserManager');
 var PostManager = require('../../../models/managers/PostManager');
 var Activity = require('../../../models/Activity');
+var RandomNameManager = require('../../../models/managers/RandomNameManager');
 var express = require('express');
 var router = express.Router();
 
@@ -65,6 +66,9 @@ router.param('notification', function(req, res, next, id) {
   });
 });
 
+router.get('/random', function(req, res) {
+  res.json({ name: RandomNameManager.generate() });
+});
 
 // USER ROUTES
 

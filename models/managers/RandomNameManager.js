@@ -5,11 +5,15 @@ var Q = require('q');
 var _ = require('lodash');
 var randoms = require('./randoms');
 
+String.prototype.toCap = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 /**
  * Generate a random name
  */
 exports.generate = function() {
-  return randoms.adjectives[Math.floor(Math.random() * randoms.adjectives.length)] + randoms.nouns[Math.floor(Math.random() * randoms.nouns.length)];
+  return randoms.adjectives[Math.floor(Math.random() * randoms.adjectives.length)].toCap() + randoms.nouns[Math.floor(Math.random() * randoms.nouns.length)].toCap();
 };
 
 /**
