@@ -70,126 +70,6 @@ router.get('/random', function(req, res) {
   res.json({ name: RandomNameManager.generate() });
 });
 
-// USER ROUTES
-
-/**
- * POST /login
- * Login a user
- */
-router.post('/login', function(req, res) {
-  req.assert('email', 'Email is not valid').isEmail();
-  req.assert('password', 'Password cannot be blank').notEmpty();
-
-  var errors = req.validationErrors();
-
-  if (errors) {
-    return res.status(400).json(errors);
-  }
-
-  passport.authenticate('local', function(err, user, info) {
-    if (err) {
-      return res.status(400).json({ error: err });
-    }
-    if (!user) {
-      return res.status(400).json({ error: info.message });
-    }
-    req.logIn(user, function(err) {
-      if (err) {
-        return res.status(400).json({ error: err });
-      }
-      return res.json({ msg: 'Success! You are logged in.' });
-    });
-  })(req, res);
-});
-
-/**
- * POST /signup
- * Signup
- */
-router.post('/signup', function(req, res){
-  req.assert('email', 'Email is not valid').isEmail();
-  req.assert('password', 'Password must be at least 4 characters long').len(4);
-  req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
-
-  var errors = req.validationErrors();
-
-  if (errors) {
-    return res.json(errors);
-  }
-
-  var user = new User({
-    email: req.body.email,
-    password: req.body.password
-  });
-
-  User.findOne({ email: req.body.email }, function(err, existingUser) {
-    if (existingUser) {
-      return res.status(400).json({ errors: ['Account with that email address already exists.'] });
-    }
-    user.save(function(err) {
-      if (err) {
-        return res.status(400).json({ error: err });
-      }
-      req.logIn(user, function(err) {
-        if (err) {
-          return res.status(400).json({ error: err });
-        }
-        res.json(user);
-      });
-    });
-  });
-});
-
-/**
- * GET /account
- * Get the current logged in user
- */
-router.get('/account', function(req, res) {
-  if (!req.user) {
-    return res.status(401).json({ error: 'You are not logged in!' });
-  }
-  UserManager.getPrivateUser(req.user._id).then(function(user) {
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-    res.json(user);
-  }, function(err){
-    res.status(401).json({ error: err });
-  });
-});
-
-/**
- * POST /account/update
- * Update a user account
- */
-router.post('/account', function(req, res) {
- User.findById(req.user.id, function(err, user) {
-   if (err) {
-     return next(err);
-   }
-   user.profile.name = req.body.name || '';
-   user.profile.gender = req.body.gender || '';
-   user.profile.location = req.body.location || '';
-   user.profile.website = req.body.website || '';
-   user.save(function(err) {
-     if (err) {
-       return res.status(400).json({ error: err });
-     }
-     res.json(user);
-   });
- });
-});
-
-/**
- * POST /logout
- * Logout the current user
- */
-router.post('/logout', function(req, res) {
-    req.logout();
-    res.json({ message: 'You have been logged out' });
-});
-
-
 // NOTIFICATIONS
 
 /**
@@ -264,10 +144,6 @@ router.post('/nofitication/:notification/seen', function(req, res) {
  * Get a list of all domains
  */
 router.get('/domains', function(req, res) {
-  if (!req.user) {
-    return res.status(401).json({ error: 'You are not logged in!' });
-  }
-
   Domain
     .find()
     .exec(function(err, domains) {
@@ -283,10 +159,6 @@ router.get('/domains', function(req, res) {
  * Get a domain by ID
  */
 router.get('/domain/:domain', function(req, res) {
-  if (!req.user) {
-    return res.status(401).json({ error: 'You are not logged in!' });
-  }
-
   res.json(req.domain);
 });
 
@@ -295,10 +167,6 @@ router.get('/domain/:domain', function(req, res) {
  * Search for a domain
  */
 router.get('/domains', function(req, res) {
-  if (!req.user) {
-    return res.status(401).json({ error: 'You are not logged in!' });
-  }
-
   req.assert('name', 'Please provide a domain name to find').notEmpty();
   req.sanitize('name').escape();
 
@@ -325,10 +193,6 @@ router.get('/domains', function(req, res) {
  * Get the domain users list
  */
 router.get('/domain/:domain/users', function(req, res) {
-  if (!req.user) {
-    return res.status(401).json({ error: 'You are not logged in!' });
-  }
-
   User
     .find({
       domain: req.domain

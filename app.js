@@ -39,8 +39,9 @@ var User = require('./models/User');
 var homeController = require('./controllers/home');
 var userController = require('./controllers/user');
 var apiController = require('./controllers/api');
-var apiControllers = {};
-    apiControllers.v1 = require('./controllers/api/v1/api');
+var apiControllers = { v1: {} };
+    apiControllers.v1.user = require('./controllers/api/v1/user');
+    apiControllers.v1.posts = require('./controllers/api/v1/api');
 var contactController = require('./controllers/contact');
 
 /**
@@ -139,7 +140,7 @@ app.get('/account/unlink/:provider', passportConfig.isAuthenticated, userControl
 /**
  * Data API calls
  */
-app.use('/v1/api', apiControllers.v1);
+app.use('/v1/api', apiControllers.v1.posts, apiControllers.v1.user);
 
 
 /**
