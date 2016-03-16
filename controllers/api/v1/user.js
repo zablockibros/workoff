@@ -188,10 +188,6 @@ router.post('/account', function(req, res) {
  * Request a password reset token
  */
 router.post('/password/forgot', function(req, res) {
-  if (!req.user) {
-    return res.status(401).json({ error: 'You are not logged in!' });
-  }
-
   req.assert('email', 'Please enter a valid email address.').isEmail();
 
   var errors = req.validationErrors();
@@ -259,8 +255,7 @@ router.post('/password/reset/:token', function(req, res) {
   var errors = req.validationErrors();
 
   if (errors) {
-    req.flash('errors', errors);
-    return res.redirect('back');
+    return res.status(400).json({ errors: errors });
   }
 
   async.waterfall([
