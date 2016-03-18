@@ -46,13 +46,7 @@ activitySchema.pre('save', function(next) {
   this.wasNew = this.isNew;
 
   if (this.isNew && this.type === 'comment' && this.user && this.post) {
-      RandomNameManager.saveNameForComment(this.user, this.post).then(function(randomName) {
-        this.funnyName = randomName.name;
-        next();
-      },
-      function(err) {
-        next();
-      });
+    next();
   }
   else {
     next();

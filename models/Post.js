@@ -48,13 +48,7 @@ postSchema.pre('save', function(next) {
   this.wasNew = this.isNew;
 
   if (this.isNew) {
-    RandomNameManager.saveNameForUser(this.user).then(function(randomName) {
-      this.funnyName = randomName.name;
-      next();
-    },
-    function(err) {
-      next();
-    });
+    next();
   }
   else {
     next();

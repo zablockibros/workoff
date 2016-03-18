@@ -2,11 +2,12 @@
 
 var mongoose = require('mongoose');
 
-var schema = new mongoose.Schema({
+var randomNameSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    index: true
+    index: true,
+    default: null
   },
   post: {
     type: mongoose.Schema.Types.ObjectId,
@@ -14,32 +15,17 @@ var schema = new mongoose.Schema({
     index: true,
     default: null
   },
-  name: { type: String, index: true }
+  name: { type: String, index: true, default: null }
 
 }, { timestamps: true });
 
-schema.set('autoIndex', false);
+randomNameSchema.set('autoIndex', false);
 
-/**
- *  Hook functions
- */
-schema.pre('save', function(next) {
-  var random = this;
-  this.wasNew = this.isNew;
-  next();
-});
-
-schema.post('save', function(random, next) {
-  if (random.wasNew) {
-
-  }
-  next();
-});
 
 /**
  *  Helper functions
  */
 
-var RandomName = mongoose.model('RandomName', schema);
+var RandomName = mongoose.model('RandomName', randomNameSchema);
 
 module.exports = RandomName;

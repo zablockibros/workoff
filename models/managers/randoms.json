@@ -31,7 +31,10 @@
     "jumping",
     "fancy",
     "hungry",
-    "thirsty"
+    "thirsty",
+    "iffy",
+    "lackluster",
+    "marry"
   ],
   "nouns": [
     "stapler",
@@ -64,6 +67,9 @@
     "taco",
     "onion",
     "cat",
-    "puppy"
+    "puppy",
+    "jelly",
+    "noodle",
+    "stump"
   ]
 }

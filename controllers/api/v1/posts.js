@@ -157,9 +157,14 @@ router.post('/post', function(req, res) {
 
   req.assert('title', 'Please provide a title').notEmpty();
   req.assert('content', 'Please provide a description').notEmpty();
-  req.assert('link', 'Please enter a valid URL').isURL({
-    require_protocol: true
-  });
+  if (req.body.link) {
+    req.assert('link', 'Please enter a valid URL').isURL({
+      require_protocol: true
+    });
+  }
+  else {
+    req.body.link = null;
+  }
   req.sanitize('title').escape();
   req.sanitize('content').escape();
 
@@ -169,25 +174,43 @@ router.post('/post', function(req, res) {
     return res.status(400).json(errors);
   }
 
-  UserManager.getPrivateUser(req.user._id).then(function(user) {
-    var post = new Post({
-      title: req.body.title,
-      content: req.body.content,
-      link: req.body.link,
-      user: user,
-      domain: user.domain
-    });
+  async.waterfall([
+    function(done) {
+      RandomNameManager.saveNameForUser(req.user).then(function(randomName) {
+        done(null, randomName)
+      },
+      function(err) {
+        done(err);
+      });
+    },
+    function(randomName, done) {
+      UserManager.getPrivateUser(req.user._id).then(function(user) {
+        var post = new Post({
+          title: req.body.title,
+          content: req.body.content,
+          link: req.body.link,
+          user: user,
+          domain: user.domain,
+          funnyName: randomName.name
+        });
 
-    post.save(function(err) {
-      if (err) {
-        return res.status(400).json({ error: err });
-      }
+        post.save(function(err) {
+          if (err) {
+            return done(err);
+          }
 
-      res.json({ post: post });
-    });
-  },
-  function(err) {
-    return res.status(400).json({ error: err });
+          done(null, post);
+        });
+      },
+      function(err) {
+        done(err);
+      });
+    }
+  ], function(err, post) {
+    if (err) {
+      return res.status(400).json({ error: err });
+    }
+    res.json({ post: post })
   });
 });
 

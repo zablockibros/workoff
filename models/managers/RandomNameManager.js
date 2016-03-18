@@ -1,6 +1,6 @@
 "use strict";
 
-var RandomNAme = require('../RandomName');
+var RandomName = require('../RandomName');
 var Q = require('q');
 var _ = require('lodash');
 var randoms = require('./randoms');
@@ -83,10 +83,12 @@ exports.saveNameForUser = function(user) {
 
   var name = exports.generate();
 
-  var randomName = new RandomName({
-    user: user,
-    name: name
-  });
+  console.log(name);
+  console.log(user);
+
+  var randomName = new RandomName();
+  randomName.name = name;
+  randomName.user = user;
 
   randomName.save(function(err) {
     if (err) {
