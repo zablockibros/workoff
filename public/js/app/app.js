@@ -49,13 +49,16 @@ angular.module('cojabberApp', [])
   app.state = {
     showing: 'hot',
     post: {
-      text: ''
+      text: '',
+      submitting: false
     },
     posts: [],
     page: 1,
     sort: '',
     fetchingPosts: false,
-    activity: [] // array of Activity
+    activity: [], // array of Activity
+    upvoted: [], // array of post keys that this user upvoted
+    downvoted: [] // array of post keys that this user downvoted
   };
 
   function addActivity(activity) {
@@ -77,6 +80,29 @@ angular.module('cojabberApp', [])
     });
   }
 
+  function pluckVotes(activities) {
+      var filtered = _.filter(activities, function(activity) {
+        return activity.type == 'vote';
+      });
+      var upvotes = _.map(
+        _.filter(filtered, function(activity) {
+          return activity.value == 1;
+        }),
+        function(activity) {
+          return activity.id;
+        }
+      );
+      var downvotes = _.map(
+        _.filter(filtered, function(activity) {
+          return activity.value == -1;
+        }),
+        function(activity) {
+          return activity.id;
+        }
+      );
+      app.state.upvotes = upvotes;
+      app.state.downvotes = downvotes;
+  };
 
   app.countPostLength = function() {
     return app.state.post.text.length;
