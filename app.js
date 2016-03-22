@@ -125,7 +125,13 @@ app.get('/', function(req, res) {
   res.render('home', {});
 });
 app.get('/app', function(req, res) {
- res.render('app', {});
+ res.render('app', {
+   user: {
+     domain: {
+       name: 'quizzle.com'
+     }
+   }
+ });
 });
 
 /*

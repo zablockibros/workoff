@@ -3,11 +3,16 @@
 @import "lib/bootstrap/bootstrap";
 @import "lib/bootstrap-social";
 @import "lib/font-awesome/font-awesome";
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700,300,300italic);
 
 @import "themes/default/default";
 
 // Scaffolding
 // -------------------------
+
+* {
+  font-family: 'Lato', sans-serif;
+}
 
 html {
   position: relative;
@@ -15,8 +20,9 @@ html {
 }
 
 body {
-  padding-top: 60px;
+  padding-top: 0px;
   margin-bottom: 75px;
+  background: #f9f9f9;
 }
 
 footer {
@@ -29,6 +35,10 @@ footer {
   p, ul {
     margin-bottom: 0;
   }
+}
+
+.container {
+  max-width: 900px;
 }
 
 // Input Fields
@@ -45,6 +55,12 @@ textarea {
   width: 30px;
   height: 30px;
   margin: -15px 15px -15px;
+}
+.navbar-default .navbar-text {
+  color: #666;
+}
+.navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+  color: #252525;
 }
 
 // Alerts
@@ -63,9 +79,41 @@ textarea {
   box-shadow: 0 0 5px #ccc, inset 0 0 0 #000;
 }
 
-// Font Icons
+// Panels
 // -------------------------
 
-.fa {
-  margin-right: 6px;
+.panel {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 0px 0px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0.05);
+}
+.panel.panel-default {
+  border-color: #e6e6e6;
+}
+
+// Voting blocks
+// -------------------------
+
+.voter {
+  color: #999;
+  .fa.upvote, .fa.downvote {
+    cursor: pointer
+  }
+  .fa.active {
+    color: #111;
+  }
+  .count {
+    color: #333;
+  }
+}
+
+.post-options {
+  margin-bottom: 10px;
+
+  .nav {
+    display: inline-block;
+  }
 }
