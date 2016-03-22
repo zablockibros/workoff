@@ -32,6 +32,10 @@ angular.module('cojabberApp', [])
       return $http.delete(apiUrl + '/post/' + id + '/delete');
   };
 
+  dataFactory.logout = function(id) {
+      return $http.post(apiUrl + '/logout');
+  };
+
   return dataFactory;
 
 }])
@@ -59,8 +63,20 @@ angular.module('cojabberApp', [])
   };
 
   function replaceActivity(activity) {
-    
+    var current = _.find(app.state.activity, function(obj) {
+      obj.id == activity.id;
+    });
+    if (current !== undefined) {
+      current = activity;
+    }
   };
+
+  function removeActivity(activity) {
+    app.state.activity = _.filter(app.state.activity, function(obj) {
+      return obj.id !== activity.id;
+    });
+  }
+
 
   app.countPostLength = function() {
     return app.state.post.text.length;
@@ -70,7 +86,10 @@ angular.module('cojabberApp', [])
     if (event) {
       event.preventDefault();
     }
-    alert('logout');
+
+    dataFactory.logout().then(function(data) {
+      window.location = '/';
+    });
   };
 
   app.showPoster = function(event) {
