@@ -4,6 +4,10 @@ angular.module('cojabberApp', [])
 
   var apiUrl = 'http://127.0.0.1:3000/v1/api';
 
+  dataFactory.getActivity = function(type) {
+      return $http.get(apiUrl + '/activity?type' + type);
+  };
+
   dataFactory.getPosts = function(sort) {
       return $http.get(apiUrl + '/posts?sort=' + sort);
   };
@@ -46,7 +50,16 @@ angular.module('cojabberApp', [])
     posts: [],
     page: 1,
     sort: '',
-    fetchingPosts: false
+    fetchingPosts: false,
+    activity: [] // array of Activity
+  };
+
+  function addActivity(activity) {
+    app.state.activity.push(activity);
+  };
+
+  function replaceActivity(activity) {
+    
   };
 
   app.countPostLength = function() {
@@ -77,6 +90,8 @@ angular.module('cojabberApp', [])
   };
 
   app.fetchPosts = function(sort) {
+    app.state.fetchingPosts = true;
+
     dataFactory.getPosts(sort).then(function(data) {
       console.log(data);
       $timeout(function(){
@@ -86,6 +101,11 @@ angular.module('cojabberApp', [])
       });
     }, function(err) {
       alert(err.data.error);
+    })
+    .finally(function() {
+      $timeout(function() {
+        app.state.fetchingPosts = false;
+      });
     });
   };
 

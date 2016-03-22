@@ -8791,6 +8791,9 @@ button.close {
     text-transform: uppercase;
     transition: all 0.2s linear; }
 
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important; }
+
 * {
   font-family: 'Lato', sans-serif; }
 

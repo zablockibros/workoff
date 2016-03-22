@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CoJabber</title>
   <link rel="stylesheet" href="/css/main.css" />
+  <script src="/bower_components/underscore/underscore-min.js"></script>
+  <script src="/bower_components/async/dist/async.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
   <script src="/js/app/app.js"></script>
   <!--[if lt IE 9]>
@@ -40,6 +42,8 @@
       <!--end sidebar column-->
       <!--start content column-->
       <div class="col-md-8 col-md-offset-2">
+
+        <!--Tabs-->
         <div class="text-center post-options">
           <ul class="nav nav-pills">
             <li ng-class="{ 'active': app.state.showing == 'hot' }"><a href="#" ng-click="app.showPosts('hot', $event)">Hot</a></li>
@@ -49,7 +53,7 @@
         </div>
 
         <!--Posts section-->
-        <div class="panel panel-default" ng-if="app.state.showing !== 'post'">
+        <div class="panel panel-default" ng-if="app.state.showing !== 'post'" ng-cloak>
           <div class="panel-body">
             <div class="media">
               <div class="media-left media-middle voter">
@@ -68,7 +72,7 @@
         </div>
 
         <!--Make a post section-->
-        <div ng-if="app.state.showing === 'post'">
+        <div ng-if="app.state.showing === 'post'" ng-cloak>
           <textarea class="form-control" rows="3" ng-model="app.state.post.text"></textarea>
           <span class="text-muted">{{ app.countPostLength() }} / 400</span>
         </div>

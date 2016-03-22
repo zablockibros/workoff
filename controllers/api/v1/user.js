@@ -161,6 +161,37 @@ router.get('/account', function(req, res) {
 });
 
 /**
+ * GET /activity?type=
+ * Get the current logged in users activity
+ */
+router.get('/activity', function(req, res) {
+  req.sanitize('type').escape();
+
+  var type = type || null;
+  var where = {};
+  where.user = req.user;
+  if (type) {
+    where.type = type;
+  }
+
+  if (!req.user) {
+    return res.status(401).json({ error: 'You are not logged in!' });
+  }
+
+  Actvitity
+    .find()
+    .where(type)
+    .exec(function(err, activities) {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      res.json({
+        activity: activities
+      })
+    });
+});
+
+/**
  * POST /account/update
  * Update a user account
  */
