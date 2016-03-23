@@ -122,9 +122,12 @@ app.use('/bower_components',  express.static(__dirname + '/bower_components'));
  * Primary app routes.
  */
 app.get('/', function(req, res) {
+  if (req.user) {
+    return res.redirect('/app');
+  }
   res.render('home', {});
 });
-app.get('/app', function(req, res) {
+app.get('/app', passportConfig.isAuthenticated, function(req, res) {
  res.render('app', {
    user: {
      domain: {

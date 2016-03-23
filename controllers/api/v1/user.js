@@ -85,7 +85,7 @@ router.post('/login', function(req, res) {
   var errors = req.validationErrors();
 
   if (errors) {
-    return res.status(400).json(errors);
+    return res.status(400).json({ errors: errors, error: 'Failed to login' });
   }
 
   passport.authenticate('local', function(err, user, info) {
@@ -99,7 +99,7 @@ router.post('/login', function(req, res) {
       if (err) {
         return res.status(400).json({ error: err });
       }
-      return res.json({ msg: 'Success! You are logged in.' });
+      return res.json({ message: 'Success! You are logged in.' });
     });
   })(req, res);
 });
@@ -116,7 +116,7 @@ router.post('/signup', function(req, res){
   var errors = req.validationErrors();
 
   if (errors) {
-    return res.json(errors);
+    return res.status(400).json({ errors: errors, error: 'Sign up failed!' });
   }
 
   var user = new User({
@@ -126,18 +126,28 @@ router.post('/signup', function(req, res){
 
   User.findOne({ email: req.body.email }, function(err, existingUser) {
     if (existingUser) {
-      return res.status(400).json({ errors: ['Account with that email address already exists.'] });
+      return res.status(400).json({ error: 'Account with that email address already exists.' });
     }
     user.save(function(err) {
       if (err) {
         return res.status(400).json({ error: err });
       }
-      req.logIn(user, function(err) {
+
+      passport.authenticate('local', function(err, user, info) {
         if (err) {
           return res.status(400).json({ error: err });
         }
-        res.json(user);
-      });
+        if (!user) {
+          return res.status(400).json({ error: info.message });
+        }
+        req.logIn(user, function(err) {
+          if (err) {
+            return res.status(400).json({ error: err });
+          }
+          return res.json({ message: 'Success! You are logged in.' });
+        });
+      })(req, res);
+
     });
   });
 });

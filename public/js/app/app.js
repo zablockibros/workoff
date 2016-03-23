@@ -28,20 +28,21 @@ angular.module('cojabberApp', [])
       return $http.post(apiUrl + '/post/' + id + '/downvote', {});
   };
 
-  dataFactory.deletePost = function(id) {
-      return $http.delete(apiUrl + '/post/' + id + '/delete');
-  };
-
   dataFactory.logout = function(id) {
       return $http.post(apiUrl + '/logout');
+  };
+
+  dataFactory.login = function(data) {
+      return $http.post(apiUrl + '/login', data);
+  };
+
+  dataFactory.signup = function(data) {
+      return $http.post(apiUrl + '/signup', data);
   };
 
   return dataFactory;
 
 }])
-.controller('HomeController', function() {
-
-})
 .controller('AppController', function(dataFactory, $timeout) {
 
   var app = this;
@@ -184,6 +185,156 @@ angular.module('cojabberApp', [])
 
   app.downvote = function(post) {
 
+  };
+
+})
+.controller('HomeController', function(dataFactory, $timeout) {
+  console.log("start");
+  var home = this;
+
+  home.state = {
+    slideOn: 'login',
+    login: {
+      data: {
+        email: '',
+        password: ''
+      },
+      submitting: false,
+      error: '',
+      errors: []
+    },
+    signup: {
+      data: {
+        email: '',
+        password: '',
+        confirmPassword: ''
+      },
+      submitting: false,
+      error: '',
+      errors: []
+    }
+  };
+
+  home.isSubmitting = function(form) {
+    if (form === 'login') {
+      return home.state.login.submitting;
+    } else {
+      return home.state.signup.submitting;
+    }
+  }
+
+  home.getSlide = function() {
+    return home.state.slideOn;
+  };
+
+  home.slideToLogin = function(event) {
+    if (event) {
+      event.preventDefault();
+    }
+    home.state.slideOn = 'login';
+  };
+
+  home.slideToSignup = function(event) {
+    if (event) {
+      event.preventDefault();
+    }
+    home.state.slideOn = 'signup';
+  };
+
+  home.login = function(event) {
+    if (event) {
+      event.preventDefault();
+    }
+    if (home.state.login.submitting) {
+      return false;
+    }
+
+    home.state.login.submitting = true;
+
+    dataFactory.login(home.state.login.data).then(function(data) {
+      console.log(data);
+      $timeout(function() {
+        window.location = '/app';
+      });
+    }, function(err) {
+      $timeout(function() {
+        home.state.login.submitting = false;
+        if (err.data.error) {
+          home.state.login.error = err.data.error;
+        } else {
+          home.state.login.error = '';
+        }
+        if (err.data.errors) {
+          home.state.login.errors = err.data.errors;
+        } else {
+          home.state.login.errors = [];
+        }
+        console.log(home.state.login);
+      });
+    });
+  };
+  home.getLoginError = function() {
+    return home.state.login.error;
+  };
+  home.getLoginErrors = function() {
+    return home.state.login.errors;
+  };
+  home.getLoginParamError = function(field) {
+    var err = _.find(home.state.login.errors, function(error) {
+      return error.param == field;
+    });
+    if (err !== undefined) {
+      return err.msg;
+    }
+    return null;
+  };
+
+  home.signup = function(event) {
+    if (event) {
+      event.preventDefault();
+    }
+    if (home.state.signup.submitting) {
+      return false;
+    }
+
+    home.state.signup.submitting = true;
+
+    dataFactory.signup(home.state.signup.data).then(function(data) {
+      console.log(data);
+      $timeout(function() {
+        window.location = '/app';
+      });
+    }, function(err) {
+      $timeout(function() {
+        home.state.signup.submitting = false;
+        if (err.data.error) {
+          home.state.signup.error = err.data.error;
+        } else {
+          home.state.signup.error = '';
+        }
+        if (err.data.errors) {
+          home.state.signup.errors = err.data.errors;
+        } else {
+          home.state.signup.errors = [];
+        }
+        console.log(home.state.signup);
+      });
+    });
+  };
+  home.getSignupError = function() {
+    return home.state.signup.error;
+  };
+  home.getSignupErrors = function() {
+    return home.state.signup.errors;
+  };
+  home.getSignupParamError = function(field) {
+    var err = _.find(home.state.signup.errors, function(error) {
+      return error.param == field;
+    });
+    if (err !== undefined) {
+      return err.msg;
+    }
+    return null;
   };
 
 });

@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CoJabber</title>
   <link rel="stylesheet" href="/css/main.css" />
+  <script src="/bower_components/underscore/underscore-min.js"></script>
+  <script src="/bower_components/async/dist/async.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
   <script src="/js/app/app.js"></script>
   <!--[if lt IE 9]>
@@ -13,7 +15,7 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
 </head>
-<body ng-controller="AppController">
+<body ng-controller="HomeController as home">
   <nav class="navbar navbar-default navbar-static-top">
     <div class="container">
       <div class="navbar-header">
@@ -26,14 +28,97 @@
 
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">justin@<%= user.domain.name %><span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Logout</a></li>
-          </ul>
+          <a href="#" ng-click="home.openLogin();" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Login</a>
         </li>
       </ul>
     </div>
   </nav>
+
+  <div class="container">
+    <form class="form-signin" ng-if="home.getSlide() == 'login'">
+      <h2 class="form-signin-heading">Get back to it</h2>
+      <div class="form-group has-error" ng-class="{ 'form-group': true, 'has-error': true }" ng-if="home.getLoginError()" ng-cloak>
+        <label>{{home.getLoginError()}}</label>
+      </div>
+
+      <div class="form-group" ng-class="{ 'form-group': true, 'has-error': home.getLoginParamError('email') }">
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" ng-model="home.state.login.data.email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <span class="help-block" ng-if="home.getLoginParamError('email')" ng-cloak>{{ home.getLoginParamError('email') }}</span>
+      </div>
+
+      <div class="form-group" ng-class="{ 'form-group': true, 'has-error': home.getLoginParamError('password') }">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" ng-model="home.state.login.data.password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <span class="help-block" ng-if="home.getLoginParamError('password')" ng-cloak>{{ home.getLoginParamError('password') }}</span>
+      </div>
+
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="remember-me"> Remember me
+        </label>
+      </div>
+      <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="home.login($event);">
+        <span ng-if="!home.isSubmitting('login')">Login</span>
+        <div class="spinner" ng-if="home.isSubmitting('login')" ng-cloak>
+          <div class="rect1"></div>
+          <div class="rect2"></div>
+          <div class="rect3"></div>
+          <div class="rect4"></div>
+          <div class="rect5"></div>
+        </div>
+      </button>
+      <br />
+      <div class="text-center">
+        <a href="#" ng-click="home.slideToSignup($event);">
+          <span>Not a member? Join us!
+        </a>
+      </div>
+    </form>
+
+    <form class="form-signin" ng-cloak ng-if="home.getSlide() == 'signup'">
+      <h2 class="form-signin-heading">Start having fun at work</h2>
+
+      <div class="form-group has-error" ng-class="{ 'form-group': true, 'has-error': true }" ng-if="home.getSignupError()" ng-cloak>
+        <label>{{home.getSignupError()}}</label>
+      </div>
+
+      <div class="form-group" ng-class="{ 'form-group': true, 'has-error': home.getSignupParamError('email') }">
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" ng-model="home.state.signup.data.email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <span class="help-block" ng-if="home.getSignupParamError('email')" ng-cloak>{{ home.getSignupParamError('email') }}</span>
+      </div>
+
+      <div class="form-group" ng-class="{ 'form-group': true, 'has-error': home.getSignupParamError('password') }">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" ng-model="home.state.signup.data.password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <span class="help-block" ng-if="home.getSignupParamError('password')" ng-cloak>{{ home.getSignupParamError('password') }}</span>
+      </div>
+
+      <div class="form-group" ng-class="{ 'form-group': true, 'has-error': home.getSignupParamError('confirmPassword') }">
+        <label for="confirmPassword" class="sr-only">Confirm Password</label>
+        <input type="password" ng-model="home.state.signup.data.confirmPassword" id="confirmPassword" class="form-control" placeholder="Confirm Password" required="">
+        <span class="help-block" ng-if="home.getSignupParamError('confirmPassword')" ng-cloak>{{ home.getSignupParamError('confirmPassword') }}</span>
+      </div>
+
+      <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="home.signup($event);">
+        <span ng-if="!home.isSubmitting('signup')">Join</span>
+        <div class="spinner" ng-if="home.isSubmitting('signup')">
+          <div class="rect1"></div>
+          <div class="rect2"></div>
+          <div class="rect3"></div>
+          <div class="rect4"></div>
+          <div class="rect5"></div>
+        </div>
+      </button>
+      <br />
+      <div class="text-center">
+        <a href="#" ng-click="home.slideToLogin($event);">
+          Already a member? Login!
+        </a>
+      </div>
+    </form>
+  </div>
 
   <script src="/bower_components/jquery/dist/jquery.min.js"></script>
   <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
