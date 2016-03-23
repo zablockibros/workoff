@@ -100,9 +100,29 @@ angular.module('cojabberApp', [])
           return activity.id;
         }
       );
-      app.state.upvotes = upvotes;
-      app.state.downvotes = downvotes;
+      app.state.upvoted = upvotes;
+      app.state.downvoted = downvotes;
   };
+  function addUpvoted(id) {
+    if (!(id in app.state.upvoted)) {
+      app.state.upvoted.push(id);
+    }
+  }
+  function addDownvoted(id) {
+    if (!(id in app.state.downvoted)) {
+      app.state.downvoted.push(id);
+    }
+  }
+  function removeUpvoted(id) {
+    app.state.upvoted = _.filter(app.state.upvoted, function(voteId) {
+      return voteId != id;
+    })
+  }
+  function removeDownvoted(id) {
+    app.state.downvoted = _.filter(app.state.downvoted, function(voteId) {
+      return voteId != id;
+    })
+  }
 
   app.countPostLength = function() {
     return app.state.post.text.length;
