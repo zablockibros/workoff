@@ -4,6 +4,7 @@
 @import "lib/bootstrap-social";
 @import "lib/font-awesome/font-awesome";
 @import url(https://fonts.googleapis.com/css?family=Lato:400,700,300,300italic);
+@import url(https://fonts.googleapis.com/css?family=Nunito:400,300,700);
 
 @import "themes/default/default";
 
@@ -16,6 +17,7 @@
 
 * {
   font-family: 'Lato', sans-serif;
+  font-family: "Avenir", helvetica,arial,sans-serif;
 }
 
 html {
@@ -27,6 +29,7 @@ body {
   padding-top: 0px;
   margin-bottom: 75px;
   background: #f9f9f9;
+  font-size: 15px;
 }
 
 footer {

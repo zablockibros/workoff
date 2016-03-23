@@ -121,6 +121,8 @@ app.use('/bower_components',  express.static(__dirname + '/bower_components'));
 /**
  * Primary app routes.
  */
+var UserManager = require('./models/managers/UserManager');
+
 app.get('/', function(req, res) {
   if (req.user) {
     return res.redirect('/app');
@@ -128,13 +130,16 @@ app.get('/', function(req, res) {
   res.render('home', {});
 });
 app.get('/app', passportConfig.isAuthenticated, function(req, res) {
- res.render('app', {
-   user: {
-     domain: {
-       name: 'quizzle.com'
-     }
-   }
- });
+  UserManager.getPrivateUser(req.user._id).then(function(user) {
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.render('app', {
+      user: user
+    });
+  }, function(err){
+    res.status(401).json({ error: err });
+  });
 });
 
 /*

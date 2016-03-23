@@ -6,6 +6,7 @@
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
 @import url(https://fonts.googleapis.com/css?family=Lato:400,700,300,300italic);
+@import url(https://fonts.googleapis.com/css?family=Nunito:400,300,700);
 html {
   font-family: sans-serif;
   -ms-text-size-adjust: 100%;
@@ -8795,7 +8796,8 @@ button.close {
   display: none !important; }
 
 * {
-  font-family: 'Lato', sans-serif; }
+  font-family: 'Lato', sans-serif;
+  font-family: "Avenir", helvetica,arial,sans-serif; }
 
 html {
   position: relative;
@@ -8804,7 +8806,8 @@ html {
 body {
   padding-top: 0px;
   margin-bottom: 75px;
-  background: #f9f9f9; }
+  background: #f9f9f9;
+  font-size: 15px; }
 
 footer {
   position: absolute;

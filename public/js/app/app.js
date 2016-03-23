@@ -51,7 +51,9 @@ angular.module('cojabberApp', [])
     showing: 'hot',
     post: {
       text: '',
-      submitting: false
+      submitting: false,
+      error: '',
+      errors: []
     },
     posts: [],
     page: 1,
@@ -129,6 +131,10 @@ angular.module('cojabberApp', [])
     return app.state.post.text.length;
   };
 
+  app.getPosts = function() {
+    return app.state.posts;
+  }
+
   app.logout = function(event) {
     if (event) {
       event.preventDefault();
@@ -161,9 +167,9 @@ angular.module('cojabberApp', [])
     dataFactory.getPosts(sort).then(function(data) {
       console.log(data);
       $timeout(function(){
-        app.state.posts = data.posts;
-        app.state.page = data.page;
-        app.state.sort = data.sort;
+        app.state.posts = data.data.posts;
+        app.state.page = data.data.page;
+        app.state.sort = data.data.sort;
       });
     }, function(err) {
       alert(err.data.error);
@@ -186,6 +192,12 @@ angular.module('cojabberApp', [])
   app.downvote = function(post) {
 
   };
+
+  function init() {
+    app.fetchPosts(app.state.showing);
+  }
+
+  init();
 
 })
 .controller('HomeController', function(dataFactory, $timeout) {
