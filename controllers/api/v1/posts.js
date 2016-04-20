@@ -155,7 +155,7 @@ router.post('/post', function(req, res) {
     return res.status(401).json({ error: 'You are not logged in!' });
   }
 
-  req.assert('title', 'Please provide a title').notEmpty();
+  //req.assert('title', 'Please provide a title').notEmpty();
   req.assert('content', 'Please provide a description').notEmpty();
   if (req.body.link) {
     req.assert('link', 'Please enter a valid URL').isURL({
@@ -186,7 +186,7 @@ router.post('/post', function(req, res) {
     function(randomName, done) {
       UserManager.getPrivateUser(req.user._id).then(function(user) {
         var post = new Post({
-          title: req.body.title,
+          title: req.body.title || null,
           content: req.body.content,
           link: req.body.link,
           user: user,

@@ -8803,11 +8803,13 @@ html {
   position: relative;
   min-height: 100%; }
 
+html, body {
+  font-size: 16px; }
+
 body {
   padding-top: 0px;
   margin-bottom: 75px;
-  background: #f9f9f9;
-  font-size: 15px; }
+  background: #f9f9f9; }
 
 footer {
   position: absolute;
@@ -8933,6 +8935,18 @@ textarea {
 
 .panel.panel-default {
   border-color: #e6e6e6; }
+
+.cj-post {
+  display: block;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 1.1rem; }
+  .cj-post .cj-post-body {
+    padding: 18px 0 14px 0; }
+  .cj-post .media-left, .cj-post .media > .pull-left {
+    padding-right: 18px; }
+
+.cj-post:first-child {
+  border-top: 1px solid #e6e6e6; }
 
 .voter {
   color: #999; }

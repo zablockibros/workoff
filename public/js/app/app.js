@@ -50,7 +50,11 @@ angular.module('cojabberApp', [])
   app.state = {
     showing: 'hot',
     post: {
-      text: '',
+      data: {
+        title: '',
+        content: '',
+        link: ''
+      },
       submitting: false,
       error: '',
       errors: []
@@ -127,14 +131,20 @@ angular.module('cojabberApp', [])
     })
   }
 
+  /**
+   *  Checkers/getters
+   */
   app.countPostLength = function() {
-    return app.state.post.text.length;
+    return app.state.post.data.content.length;
   };
 
   app.getPosts = function() {
     return app.state.posts;
   }
 
+  /**
+   *  Action functions
+   */
   app.logout = function(event) {
     if (event) {
       event.preventDefault();
@@ -182,7 +192,38 @@ angular.module('cojabberApp', [])
   };
 
   app.post = function() {
+    if (event) {
+      event.preventDefault();
+    }
+    if (app.state.post.submitting) {
+      return false;
+    }
 
+    app.state.post.submitting = true;
+
+    dataFactory.postPost(app.state.post.data).then(function(data) {
+      console.log(data);
+      $timeout(function() {
+        // clear posting data
+        app.state.post.data.title = app.state.post.data.content = app.state.post.data.link = '';
+      });
+    }, function(err) {
+      console.log(err);
+      $timeout(function() {
+        app.state.post.submitting = false;
+        if (err.data.error) {
+          app.state.post.error = err.data.error;
+        } else {
+          app.state.post.error = '';
+        }
+        if (err.data.errors) {
+          app.state.post.errors = err.data.errors;
+        } else {
+          app.state.post.errors = [];
+        }
+        console.log(app.state.post);
+      });
+    });
   };
 
   app.upvote = function(post) {

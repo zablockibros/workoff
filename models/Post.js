@@ -23,7 +23,7 @@ var postSchema = new mongoose.Schema({
   public: { type: Boolean, default: true },
   type: { type: String, index: true },
   funnyName: { type: String },
-  title: { type: String },
+  title: { type: String, default: null },
   link: { type: String, default: null },
   content: { type: String },
   date: { type: Date, default: Date.now },

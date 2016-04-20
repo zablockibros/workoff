@@ -25,11 +25,14 @@ html {
   min-height: 100%;
 }
 
+html, body {
+  font-size: 16px;
+}
+
 body {
   padding-top: 0px;
   margin-bottom: 75px;
   background: #f9f9f9;
-  font-size: 15px;
 }
 
 footer {
@@ -194,6 +197,25 @@ textarea {
 }
 .panel.panel-default {
   border-color: #e6e6e6;
+}
+
+// posts
+// -------------------------
+
+.cj-post {
+  display: block;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 1.1rem;
+
+  .cj-post-body {
+    padding: 18px 0 14px 0;
+  }
+  .media-left, .media > .pull-left {
+    padding-right: 18px;
+  }
+}
+.cj-post:first-child {
+  border-top: 1px solid #e6e6e6;
 }
 
 // Voting blocks
